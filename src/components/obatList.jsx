@@ -1,26 +1,51 @@
 import React from 'react';
-import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 
-const ObatList = ({data = []}) => {
+const ObatList = ({data = [], selectedCategory}) => {
+  // Pesan jika tidak ada data yang ditemukan
+  const emptyMessage =
+    selectedCategory === 'Semua'
+      ? 'Data tidak ditemukan'
+      : `${selectedCategory} tidak ditemukan`;
+
   return (
     <View style={styles.listContainer}>
-      {/* Jika data kosong, tampilkan pesan */}
       {data.length === 0 ? (
-        <Text style={styles.emptyText}>Obat tidak ditemukan</Text>
+        <Text style={styles.emptyText}>{emptyMessage}</Text>
       ) : (
         data.map(obat => (
-          <View key={obat.id} style={styles.listItem}>
-            <Image source={obat.image} style={styles.obatImage} />
+          <TouchableOpacity
+            key={obat.id}
+            style={styles.listItem}
+            onPress={() => {
+              console.log(`Mengklik ${obat.name}`); // Debugging
+              Alert.alert(
+                'Detail Obat',
+                `Nama: ${obat.name}\nDeskripsi: ${obat.description}`,
+              );
+            }}>
+            {/* Cek apakah gambar tersedia, jika tidak gunakan default */}
+            <Image
+              source={
+                obat.image ? obat.image : require('../assets/image/default.jpg')
+              }
+              style={styles.obatImage}
+              onError={e =>
+                console.log('Error loading image:', e.nativeEvent.error)
+              } // Debugging jika gambar error
+            />
             <View style={styles.obatInfo}>
               <Text style={styles.obatName}>{obat.name}</Text>
               <Text style={styles.obatDescription}>{obat.description}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.detailButton}
-              onPress={() => alert(`Detail tentang ${obat.name}`)}>
-              <Text style={styles.detailButtonText}>Detail</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         ))
       )}
     </View>
@@ -63,17 +88,6 @@ const styles = StyleSheet.create({
   obatDescription: {
     fontSize: 14,
     color: '#666',
-  },
-  detailButton: {
-    backgroundColor: '#89AC46',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-  },
-  detailButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
 });
 

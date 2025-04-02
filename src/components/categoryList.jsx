@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     backgroundColor: '#e0e0e0',
-    borderRadius: 5,
+    borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 15,
     marginRight: 10,
