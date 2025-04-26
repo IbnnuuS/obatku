@@ -1,17 +1,27 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, ScrollView, TextInput} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {images, obatList} from '../../../src/data';
 import Navbar from '../../../src/components/navbar';
 import Carousel from '../../../src/components/carousel';
 import ObatList from '../../../src/components/obatList';
 
 export default function Home() {
+  const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
 
-  // Filter obat berdasarkan searchText
   const filteredObatList = obatList.filter(obat =>
     obat.name.toLowerCase().includes(searchText.toLowerCase()),
   );
+
+  const displayedObatList = filteredObatList.slice(0, 5); // tampilkan sebagian saja
 
   return (
     <View style={styles.container}>
@@ -31,7 +41,13 @@ export default function Home() {
             />
           </View>
 
-          <ObatList data={filteredObatList} selectedCategory="Semua" />
+          <ObatList data={displayedObatList} selectedCategory="Semua" />
+
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            onPress={() => navigation.navigate('Exploration')}>
+            <Text style={styles.viewAllText}>Lihat Semua Obat →</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -67,5 +83,13 @@ const styles = StyleSheet.create({
     padding: 10,
     width: '50%',
     color: '#000',
+  },
+  viewAllButton: {
+    marginTop: 10,
+    alignSelf: 'flex-end',
+  },
+  viewAllText: {
+    color: '#89AC46',
+    fontWeight: 'bold',
   },
 });

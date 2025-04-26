@@ -1,15 +1,10 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 const ObatList = ({data = [], selectedCategory}) => {
-  // Pesan jika tidak ada data yang ditemukan
+  const navigation = useNavigation();
+
   const emptyMessage =
     selectedCategory === 'Semua'
       ? 'Data tidak ditemukan'
@@ -24,14 +19,7 @@ const ObatList = ({data = [], selectedCategory}) => {
           <TouchableOpacity
             key={obat.id}
             style={styles.listItem}
-            onPress={() => {
-              console.log(`Mengklik ${obat.name}`); // Debugging
-              Alert.alert(
-                'Detail Obat',
-                `Nama: ${obat.name}\nDeskripsi: ${obat.description}`,
-              );
-            }}>
-            {/* Cek apakah gambar tersedia, jika tidak gunakan default */}
+            onPress={() => navigation.navigate('ObatDetail', {obat})}>
             <Image
               source={
                 obat.image ? obat.image : require('../assets/image/default.jpg')
@@ -39,7 +27,7 @@ const ObatList = ({data = [], selectedCategory}) => {
               style={styles.obatImage}
               onError={e =>
                 console.log('Error loading image:', e.nativeEvent.error)
-              } // Debugging jika gambar error
+              }
             />
             <View style={styles.obatInfo}>
               <Text style={styles.obatName}>{obat.name}</Text>

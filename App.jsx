@@ -1,5 +1,5 @@
-import * as React from 'react';
-import {Home, Exploration, Profile} from './src/screens';
+import React from 'react';
+import Router from './src/Navigation/Router';
 export default function App() {
-  return <Exploration />;
-}
+  return <Router />;
+} 
