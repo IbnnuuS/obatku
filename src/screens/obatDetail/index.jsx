@@ -1,16 +1,42 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet, ScrollView} from 'react-native';
+import React, {useRef} from 'react';
+import {View, Text, Image, StyleSheet, Animated} from 'react-native';
 
 export default function ObatDetail({route}) {
   const {obat} = route.params;
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const imageScale = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0.8], // gambar mengecil
+    extrapolate: 'clamp',
+  });
+
+  const titleTranslateY = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, -20], // judul bergerak naik
+    extrapolate: 'clamp',
+  });
+
+  const descriptionOpacity = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0.7], // deskripsi memudar sedikit
+    extrapolate: 'clamp',
+  });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Image
+    <Animated.ScrollView
+      contentContainerStyle={styles.container}
+      onScroll={Animated.event(
+        [{nativeEvent: {contentOffset: {y: scrollY}}}],
+        {useNativeDriver: true}
+      )}
+      scrollEventThrottle={16}
+    >
+      <Animated.Image
         source={
           obat.image ? obat.image : require('../../assets/image/default.jpg')
         }
-        style={styles.image}
+        style={[styles.image, {transform: [{scale: imageScale}]}]}
         resizeMode="contain"
       />
 
@@ -18,9 +44,14 @@ export default function ObatDetail({route}) {
         Kategori {obat.category || 'Tidak diketahui'}
       </Text>
 
-      <Text style={styles.title}>{obat.name}</Text>
-      <Text style={styles.description}>{obat.detail || obat.description}</Text>
-    </ScrollView>
+      <Animated.Text style={[styles.title, {transform: [{translateY: titleTranslateY}]}]}>
+        {obat.name}
+      </Animated.Text>
+
+      <Animated.Text style={[styles.description, {opacity: descriptionOpacity}]}>
+        {obat.detail || obat.description}
+      </Animated.Text>
+    </Animated.ScrollView>
   );
 }
 
@@ -40,7 +71,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#89AC46',
     marginBottom: 15,
-    alignSelf: 'flex-start', // Rata kiri
+    alignSelf: 'flex-start',
   },
   title: {
     fontSize: 24,
