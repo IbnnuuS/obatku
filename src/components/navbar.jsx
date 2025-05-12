@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     width: '100%',
+    paddingTop: 35,
   },
   brand: {
     fontSize: 22,

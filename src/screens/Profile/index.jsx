@@ -16,24 +16,31 @@ import {
   MessageQuestion,
   LogoutCurve,
 } from 'iconsax-react-native';
+import {useNavigation} from '@react-navigation/native';
 import Navbar from '../../../src/components/navbar';
-import { userProfile } from '../../../src/data';
+import {userProfile} from '../../../src/data';
 
 const ProfileScreen = () => {
+  const navigation = useNavigation();
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
       'Apakah Anda yakin ingin logout?',
       [
-        { text: 'Batal', style: 'cancel' },
-        { text: 'Logout', onPress: () => console.log('User Logged Out') },
+        {text: 'Batal', style: 'cancel'},
+        {text: 'Logout', onPress: () => console.log('User Logged Out')},
       ],
-      { cancelable: true }
+      {cancelable: true},
     );
   };
 
   const handleEditProfile = () => {
     Alert.alert('Edit Profile', 'Fitur edit profile belum tersedia.');
+  };
+
+  const handleTambahObat = () => {
+    navigation.navigate('addObat'); // pastikan route 'AddObat' sudah didaftarkan
   };
 
   return (
@@ -51,10 +58,20 @@ const ProfileScreen = () => {
             <Text style={styles.profileId}>{userProfile.email}</Text>
 
             {/* Tombol Edit Profile */}
-            <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              onPress={handleEditProfile}>
               <Text style={styles.editProfileText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Tambah Obat Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tambah Data</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleTambahObat}>
+            <Text style={styles.addButtonText}>+ Tambah Obat</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Settings Section */}
@@ -147,6 +164,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  addButton: {
+    backgroundColor: '#89AC46',
+    paddingVertical: 7,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    marginTop: 5,
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   section: {
     backgroundColor: '#FFF',
     marginTop: 10,

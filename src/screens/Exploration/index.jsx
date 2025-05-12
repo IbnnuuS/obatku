@@ -17,12 +17,15 @@ export default function Exploration() {
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
 
-  // Filter data berdasarkan kategori dan pencarian
-  const filteredObatList = obatList.filter(
-    obat =>
-      obat.name.toLowerCase().includes(searchText.toLowerCase()) &&
-      (selectedCategory === 'Semua' || obat.category === selectedCategory),
-  );
+  const filteredObatList = obatList.filter(obat => {
+    const name = (obat.name ?? '').toLowerCase();
+    const category = obat.category ?? '';
+
+    return (
+      name.includes(searchText.toLowerCase()) &&
+      (selectedCategory === 'Semua' || category === selectedCategory)
+    );
+  });
 
   return (
     <View style={styles.container}>

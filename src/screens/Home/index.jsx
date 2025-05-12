@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,22 +6,36 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {images, obatList} from '../../../src/data';
+import {images} from '../../../src/data';
 import Navbar from '../../../src/components/navbar';
 import Carousel from '../../../src/components/carousel';
 import ObatList from '../../../src/components/obatList';
+import {getObat} from '../../../src/utility';
 
 export default function Home() {
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
+  const [obatData, setObatData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredObatList = obatList.filter(obat =>
-    obat.name.toLowerCase().includes(searchText.toLowerCase()),
+  const fetchObat = async () => {
+    const data = await getObat();
+    setObatData(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchObat();
+  }, []);
+
+  const filteredObatList = obatData.filter(obat =>
+    (obat.name ?? '').toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const displayedObatList = filteredObatList.slice(0, 5); // tampilkan sebagian saja
+  const displayedObatList = filteredObatList.slice(0, 5);
 
   return (
     <View style={styles.container}>
@@ -41,7 +55,11 @@ export default function Home() {
             />
           </View>
 
-          <ObatList data={displayedObatList} selectedCategory="Semua" />
+          {loading ? (
+            <ActivityIndicator size="large" color="#89AC46" />
+          ) : (
+            <ObatList data={displayedObatList} selectedCategory="Semua" />
+          )}
 
           <TouchableOpacity
             style={styles.viewAllButton}
