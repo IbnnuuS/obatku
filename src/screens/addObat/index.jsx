@@ -1,3 +1,4 @@
+// src/screens/addObat/index.jsx
 import React, {useState} from 'react';
 import {
   View,
@@ -7,20 +8,20 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Image,
 } from 'react-native';
-import axios from 'axios';
-import {useNavigation} from '@react-navigation/native'; // Pastikan Anda import useNavigation
+import {useNavigation} from '@react-navigation/native';
+import {createObat} from '../../utility';
+import ImagePicker from 'react-native-image-crop-picker';
 
-const AddObatScreen = () => {
-  const navigation = useNavigation(); // Inisialisasi hook navigation
+const AddObat = () => {
+  const navigation = useNavigation();
 
-  // State untuk input
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Data kategori
   const categories = [
     {id: 1, name: 'Obat'},
     {id: 2, name: 'Vitamin'},
@@ -28,48 +29,56 @@ const AddObatScreen = () => {
     {id: 4, name: 'Suplemen'},
   ];
 
-  // Menangani submit
+  const handleImagePick = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 300,
+      cropping: true,
+    })
+      .then(image => {
+        console.log('Image path:', image.path);
+        setImage(image.path);
+      })
+      .catch(error => {
+        console.log('Image pick cancelled or failed:', error);
+      });
+  };
+
   const handleSubmit = async () => {
-    if (!title || !description || !selectedCategory) {
+    if (!title || !description || !image || !selectedCategory) {
       Alert.alert('Input Error', 'Harap lengkapi semua data!');
       return;
     }
 
-    // Kirim data ke API
     const newObat = {
       title,
       description,
       image,
-      category: selectedCategory,
+      category: selectedCategory.name,
       createdAt: new Date().toISOString(),
     };
 
     try {
-      // Ganti URL API dengan endpoint yang sesuai
-      const response = await axios.post(
-        'https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat',
-        newObat,
-      );
-      console.log('Data yang berhasil disubmit: ', response.data);
-
-      // Tampilkan alert sukses dan lakukan aksi kembali setelah klik OK
-      Alert.alert('Success', 'Obat berhasil ditambahkan!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            navigation.goBack(); // Kembali ke halaman sebelumnya setelah OK
+      const result = await createObat(newObat);
+      if (result) {
+        console.log('Data berhasil ditambahkan ke Firestore:', result);
+        Alert.alert('Success', 'Obat berhasil ditambahkan!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
           },
-        },
-      ]);
+        ]);
+      } else {
+        throw new Error('Gagal menambahkan obat ke Firestore.');
+      }
     } catch (error) {
-      console.error('Terjadi kesalahan saat mengirim data ke API: ', error);
+      console.error('Terjadi kesalahan:', error);
       Alert.alert('Error', 'Gagal menambahkan obat!');
     }
   };
 
   return (
     <ScrollView style={styles.container}>
-      {/* Label untuk Nama Obat */}
       <Text style={styles.label}>Nama Obat :</Text>
       <TextInput
         style={styles.input}
@@ -78,25 +87,24 @@ const AddObatScreen = () => {
         onChangeText={setTitle}
       />
 
-      {/* Label untuk Deskripsi */}
       <Text style={styles.label}>Deskripsi Obat :</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, {height: 100}]}
         placeholder="Deskripsi"
         value={description}
         onChangeText={setDescription}
+        multiline
+        numberOfLines={4}
       />
 
-      {/* Label untuk Gambar URL */}
-      <Text style={styles.label}>Gambar URL :</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Gambar URL"
-        value={image}
-        onChangeText={setImage}
-      />
+      <Text style={styles.label}>Gambar :</Text>
+      <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+        <Text style={styles.imagePickerText}>Pilih Gambar</Text>
+      </TouchableOpacity>
+      {image ? (
+        <Image source={{uri: image}} style={styles.previewImage} />
+      ) : null}
 
-      {/* Label untuk kategori */}
       <Text style={styles.label}>Kategori :</Text>
       <View style={styles.categoryContainer}>
         {categories.map(category => (
@@ -131,11 +139,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#F5F5F5',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
   input: {
     height: 50,
     borderColor: '#E0E0E0',
@@ -143,11 +146,31 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingLeft: 10,
     borderRadius: 8,
+    backgroundColor: '#FFF',
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  imagePicker: {
+    backgroundColor: '#E0E0E0',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  imagePickerText: {
+    color: '#333',
+    fontSize: 16,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 15,
+    resizeMode: 'cover',
   },
   categoryContainer: {
     flexDirection: 'row',
@@ -184,4 +207,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddObatScreen;
+export default AddObat;

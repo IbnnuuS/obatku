@@ -1,43 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, RefreshControl, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  RefreshControl,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import { getObat } from '../utility/index';
 
 const ObatList = ({ selectedCategory }) => {
   const navigation = useNavigation();
-  
+
   const [data, setData] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const emptyMessage =
     selectedCategory === 'Semua'
       ? 'Data tidak ditemukan'
       : `${selectedCategory} tidak ditemukan`;
 
-  // Fungsi untuk fetch data
   const fetchData = async () => {
+    setErrorMsg('');
+    setIsLoading(true);
     try {
-      const response = await axios.get('https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat');
-      // Filter data berdasarkan kategori jika ada
-      const filteredData = response.data.filter(obat =>
-        selectedCategory === 'Semua' || obat.category === selectedCategory
+      const allData = await getObat();
+      const filteredData = allData.filter(
+        (obat) =>
+          selectedCategory === 'Semua' || obat.category === selectedCategory
       );
       setData(filteredData);
     } catch (error) {
-      console.error('Terjadi kesalahan saat mengambil data: ', error);
+      console.error('Terjadi kesalahan saat mengambil data dari Firestore: ', error);
+      setErrorMsg('Gagal memuat data. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Mengambil data saat komponen pertama kali dimuat dan ketika refresh
   useEffect(() => {
     fetchData();
-  }, [selectedCategory]); // Efek dijalankan ketika selectedCategory berubah
+  }, [selectedCategory]);
 
-  // Menangani refresh ketika pull to refresh
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchData().then(() => setIsRefreshing(false));
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{errorMsg}</Text>
+        <TouchableOpacity onPress={fetchData} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>Coba Lagi</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -114,6 +146,27 @@ const styles = StyleSheet.create({
   obatDescription: {
     fontSize: 14,
     color: '#666',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

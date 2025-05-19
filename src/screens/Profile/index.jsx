@@ -25,18 +25,18 @@ const ProfileScreen = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Apakah Anda yakin ingin logout?',
+      'Keluar',
+      'Apakah Anda yakin ingin keluar?',
       [
         {text: 'Batal', style: 'cancel'},
-        {text: 'Logout', onPress: () => console.log('User Logged Out')},
+        {text: 'Keluar', onPress: () => console.log('User Keluar')},
       ],
       {cancelable: true},
     );
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Edit Profile', 'Fitur edit profile belum tersedia.');
+    Alert.alert('Edit Profil', 'Fitur edit profil belum tersedia.');
   };
 
   const handleTambahObat = () => {
@@ -76,38 +76,38 @@ const ProfileScreen = () => {
 
         {/* Settings Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
+          <Text style={styles.sectionTitle}>Pengaturan</Text>
           <TouchableOpacity style={styles.menuItem}>
             <Key size={24} color="#89AC46" />
-            <Text style={styles.menuText}>Change Password</Text>
+            <Text style={styles.menuText}>Ganti Password</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem}>
             <Global size={24} color="#89AC46" />
-            <Text style={styles.menuText}>Change Language</Text>
+            <Text style={styles.menuText}>Ganti Bahasa</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem}>
             <Notification size={24} color="#89AC46" />
-            <Text style={styles.menuText}>Notification</Text>
+            <Text style={styles.menuText}>Notifikasi</Text>
           </TouchableOpacity>
         </View>
 
         {/* About Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>Tentang</Text>
           <TouchableOpacity style={styles.menuItem}>
             <Shield size={24} color="#89AC46" />
-            <Text style={styles.menuText}>Privacy Policy</Text>
+            <Text style={styles.menuText}>Kebijakan Privasi</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem}>
             <MessageQuestion size={24} color="#89AC46" />
-            <Text style={styles.menuText}>Support Center</Text>
+            <Text style={styles.menuText}>Pusat Dukungan</Text>
           </TouchableOpacity>
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogoutCurve size={24} color="#FFF" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

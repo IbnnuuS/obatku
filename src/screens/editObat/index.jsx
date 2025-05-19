@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from 'react';
+// src/screens/EditObat/index.jsx
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,33 +9,37 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import axios from 'axios';
+import firestore from '@react-native-firebase/firestore';
+import ImagePicker from 'react-native-image-crop-picker';
 
-export default function EditObat({route, navigation}) {
-  const {obatId} = route.params;
+export default function EditObat({ route, navigation }) {
+  const { obatId } = route.params;
   const [obat, setObat] = useState({
     title: '',
     description: '',
     image: '',
-    category: {id: null, name: ''},
+    category: '',
   });
 
   const categories = [
-    {id: 1, name: 'Obat'},
-    {id: 2, name: 'Vitamin'},
-    {id: 3, name: 'Herbal'},
-    {id: 4, name: 'Suplemen'},
+    { id: 1, name: 'Obat' },
+    { id: 2, name: 'Vitamin' },
+    { id: 3, name: 'Herbal' },
+    { id: 4, name: 'Suplemen' },
   ];
 
   useEffect(() => {
     const fetchObat = async () => {
       try {
-        const response = await axios.get(
-          `https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat/${obatId}`,
-        );
-        setObat(response.data);
+        const doc = await firestore().collection('obat').doc(obatId).get();
+        if (doc.exists) {
+          setObat(doc.data());
+        } else {
+          Alert.alert('Error', 'Obat tidak ditemukan');
+        }
       } catch (error) {
         Alert.alert('Error', 'Gagal memuat data obat');
+        console.error('Error fetching obat:', error);
       }
     };
 
@@ -43,14 +48,17 @@ export default function EditObat({route, navigation}) {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(
-        `https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat/${obatId}`,
-        obat,
-      );
+      await firestore().collection('obat').doc(obatId).update({
+        title: obat.title,
+        description: obat.description,
+        image: obat.image,
+        category: obat.category, 
+      });
       Alert.alert('Berhasil', 'Data obat berhasil diperbarui');
-      navigation.goBack();
+      navigation.goBack(); 
     } catch (error) {
       Alert.alert('Error', 'Gagal memperbarui data obat');
+      console.error('Error updating obat:', error);
     }
   };
 
@@ -59,14 +67,25 @@ export default function EditObat({route, navigation}) {
       'Konfirmasi Update',
       'Apakah Anda yakin ingin menyimpan perubahan pada data ini?',
       [
-        {text: 'Batal', style: 'cancel'},
+        { text: 'Batal', style: 'cancel' },
         {
           text: 'Simpan',
           onPress: handleUpdate,
         },
       ],
-      {cancelable: true},
+      { cancelable: true }
     );
+  };
+
+  const chooseImage = () => {
+    ImagePicker.openPicker({
+      cropping: true,
+      mediaType: 'photo',
+    }).then(image => {
+      setObat({ ...obat, image: image.path });
+    }).catch(error => {
+      console.log('Image picker error: ', error);
+    });
   };
 
   return (
@@ -75,14 +94,14 @@ export default function EditObat({route, navigation}) {
       <TextInput
         style={styles.input}
         value={obat.title}
-        onChangeText={text => setObat({...obat, title: text})}
+        onChangeText={text => setObat({ ...obat, title: text })}
       />
 
       <Text style={styles.label}>Deskripsi</Text>
       <TextInput
         style={styles.textarea}
         value={obat.description}
-        onChangeText={text => setObat({...obat, description: text})}
+        onChangeText={text => setObat({ ...obat, description: text })}
         multiline
       />
 
@@ -90,8 +109,12 @@ export default function EditObat({route, navigation}) {
       <TextInput
         style={styles.input}
         value={obat.image}
-        onChangeText={text => setObat({...obat, image: text})}
+        editable={false} 
       />
+      <Text style={styles.label2}>*Jika tidak ada perubahan pada gambar, tidak perlu pilih gambar</Text>
+      <TouchableOpacity onPress={chooseImage} style={styles.button}>
+        <Text style={styles.buttonText}>Pilih Gambar</Text>
+      </TouchableOpacity>
 
       <Text style={styles.label}>Kategori</Text>
       <View style={styles.categoryContainer}>
@@ -100,14 +123,16 @@ export default function EditObat({route, navigation}) {
             key={category.id}
             style={[
               styles.categoryButton,
-              obat.category?.id === category.id && styles.selectedCategory,
+              obat.category === category.name && styles.selectedCategory,
             ]}
-            onPress={() => setObat({...obat, category})}>
+            onPress={() => setObat({ ...obat, category: category.name })}
+          >
             <Text
               style={[
                 styles.categoryButtonText,
-                obat.category?.id === category.id && styles.selectedText,
-              ]}>
+                obat.category === category.name && styles.selectedText,
+              ]}
+            >
               {category.name}
             </Text>
           </TouchableOpacity>
@@ -128,6 +153,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
+  },
+    label2: {
+    fontSize: 13,
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',

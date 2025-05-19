@@ -1,22 +1,22 @@
-import React, {useState, useEffect, useRef} from 'react';
+// src/screens/ObatDetail.js
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  Image,
-  StyleSheet,
   Animated,
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
   Alert,
+  StyleSheet,
 } from 'react-native';
-import axios from 'axios';
 import ActionSheet from 'react-native-actions-sheet';
-import {More} from 'iconsax-react-native';
-import {useNavigation} from '@react-navigation/native';
+import { More } from 'iconsax-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { getObatById, deleteObat } from '../../utility';
 
-export default function ObatDetail({route}) {
-  const {obatId} = route.params;
+export default function ObatDetail({ route }) {
+  const { obatId } = route.params;
   const [obat, setObat] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -26,18 +26,20 @@ export default function ObatDetail({route}) {
 
   const fetchObat = async () => {
     try {
-      const response = await axios.get(
-        `https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat/${obatId}`,
-      );
-      setObat(response.data);
+      setLoading(true);
+      const obatSelected = await getObatById(obatId);
+      console.log('Data obat yang diambil:', obatSelected);
+      setObat(obatSelected || null);
     } catch (error) {
       console.error('Error fetching obat:', error);
+      setObat(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('obatId yang diterima:', obatId); 
     fetchObat();
   }, [obatId]);
 
@@ -49,13 +51,17 @@ export default function ObatDetail({route}) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(
-        `https://681877695a4b07b9d1cf36b5.mockapi.io/api/obat/${obatId}`,
-      );
-      actionSheetRef.current?.setModalVisible(false);
-      navigation.goBack();
+      const success = await deleteObat(obatId);
+      if (success) {
+        actionSheetRef.current?.setModalVisible(false);
+        Alert.alert('Berhasil', 'Obat berhasil dihapus.');
+        navigation.goBack();
+      } else {
+        Alert.alert('Gagal', 'Terjadi kesalahan saat menghapus obat.');
+      }
     } catch (error) {
       console.error('Gagal menghapus obat:', error);
+      Alert.alert('Error', 'Gagal menghapus obat.');
     }
   };
 
@@ -64,14 +70,14 @@ export default function ObatDetail({route}) {
       'Konfirmasi Hapus',
       'Apakah Anda yakin ingin menghapus data ini?',
       [
-        {text: 'Batal', style: 'cancel'},
+        { text: 'Batal', style: 'cancel' },
         {
           text: 'Hapus',
           style: 'destructive',
           onPress: handleDelete,
         },
       ],
-      {cancelable: true},
+      { cancelable: true },
     );
   };
 
@@ -108,9 +114,9 @@ export default function ObatDetail({route}) {
   });
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <TouchableOpacity
-        style={{position: 'absolute', top: 20, right: 20, zIndex: 10}}
+        style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}
         onPress={() => actionSheetRef.current?.setModalVisible(true)}>
         <More size={24} color="#000" />
       </TouchableOpacity>
@@ -118,8 +124,8 @@ export default function ObatDetail({route}) {
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: true},
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
         )}
         scrollEventThrottle={16}
         refreshControl={
@@ -128,42 +134,42 @@ export default function ObatDetail({route}) {
         <Animated.Image
           source={
             obat.image
-              ? {uri: obat.image}
+              ? { uri: obat.image }
               : require('../../assets/image/default.jpg')
           }
-          style={[styles.image, {transform: [{scale: imageScale}]}]}
+          style={[styles.image, { transform: [{ scale: imageScale }] }]}
           resizeMode="contain"
         />
         <Text style={styles.category}>
-          Kategori {obat.category?.name || 'Tidak diketahui'}
+          Kategori {obat.category || 'Tidak diketahui'}
         </Text>
         <Animated.Text
-          style={[styles.title, {transform: [{translateY: titleTranslateY}]}]}>
+          style={[styles.title, { transform: [{ translateY: titleTranslateY }] }]}>
           {obat.title}
         </Animated.Text>
         <Animated.Text
-          style={[styles.description, {opacity: descriptionOpacity}]}>
+          style={[styles.description, { opacity: descriptionOpacity }]}>
           {obat.description}
         </Animated.Text>
       </Animated.ScrollView>
 
       <ActionSheet ref={actionSheetRef}>
-        <View style={{padding: 20}}>
+        <View style={{ padding: 20 }}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
               actionSheetRef.current?.setModalVisible(false);
-              navigation.navigate('editObat', {obatId});
+              navigation.navigate('editObat', { obatId });
             }}>
             <Text style={styles.actionText}>Edit</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton} onPress={confirmDelete}>
-            <Text style={[styles.actionText, {color: 'red'}]}>Delete</Text>
+            <Text style={[styles.actionText, { color: 'red' }]}>Delete</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionButton, {marginTop: 10}]}
+            style={[styles.actionButton, { marginTop: 10 }]}
             onPress={() => actionSheetRef.current?.setModalVisible(false)}>
-            <Text style={[styles.actionText, {color: '#999'}]}>Cancel</Text>
+            <Text style={[styles.actionText, { color: '#999' }]}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </ActionSheet>
